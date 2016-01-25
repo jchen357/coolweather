@@ -25,9 +25,7 @@ public class County {
         this.countyName = countyName;
     }
 
-    public String getcountyCode() {
-        return countyCode;
-    }
+    public String getcountyCode() { return countyCode; }
 
     public void setcountyCode(String countyCode) {
         this.countyCode = countyCode;

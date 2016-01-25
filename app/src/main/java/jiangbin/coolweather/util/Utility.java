@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import jiangbin.coolweather.model.City;
 import jiangbin.coolweather.model.CoolWeatherDB;
+import jiangbin.coolweather.model.County;
 import jiangbin.coolweather.model.Province;
 
 /**
@@ -18,16 +19,16 @@ public class Utility {
     public synchronized static boolean handleProvincesResponse(CoolWeatherDB coolWeatherDB,
                                                                String response) {
         if (!TextUtils.isEmpty(response)) {
-            //按逗号分隔
+            /*按逗号分隔，变成{代号|城市}的数组*/
             String[] allprovinces = response.split(",");
             if (allprovinces != null && allprovinces.length > 0) {
                 for (String p : allprovinces) {
-                    //按单竖线分隔
+                    /*再按单竖线分隔，分成代号和城市*/
                     String[] array = p.split("\\|");
                     Province province = new Province();
                     province.setProvinceCode(array[0]);
                     province.setProvinceName(array[1]);
-                    //将解析出来的数据存储到Province表
+                    /*将解析出来的数据存储到Province表*/
                     coolWeatherDB.saveProvince(province);
                 }
                 return true;
@@ -69,12 +70,12 @@ public class Utility {
             if (allCounties != null && allCounties.length > 0) {
                 for (String c : allCounties) {
                     String[] array = c.split("\\|");
-                    City county = new City();
-                    county.setCityCode(array[0]);
-                    county.setCityName(array[1]);
-                    county.setProvinceId(cityId);
+                    County county = new County();
+                    county.setcountyCode(array[0]);
+                    county.setcountyName(array[1]);
+                    county.setcityId(cityId);
                     //将解析出来的数据存储到County表
-                    coolWeatherDB.saveCity(county);
+                    coolWeatherDB.saveCounty(county);
                 }
                 return true;
             }

@@ -9,6 +9,10 @@ public class City {
     private String cityCode;
     private int provinceId;
 
+    /**
+     * 设置id的get()和set()方法
+     * id为
+     */
     public int getId() {
         return id;
     }

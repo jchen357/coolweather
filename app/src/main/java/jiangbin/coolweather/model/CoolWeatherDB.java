@@ -30,16 +30,22 @@ public class CoolWeatherDB {
     private SQLiteDatabase db;
 
     /**
-     * 将构造方法私有化，提供了一个getInstance方法来获取CoolWeatherDB的实例
-     * 这样就可以保证全局范围内只会有一个CoolWeatherDB的实例
+     * 将构造方法私有化
+     *
      */
     private CoolWeatherDB(Context context) {
         CoolWeatherOpenHelper dbHelper = new CoolWeatherOpenHelper(context, DB_NAME, null, VERSION);
+        /**
+         * 一旦得到SQLiteOpenHelper对象之后，可以使用getWritableDatabase()
+         * 或getReadableDatabase()方法来获取一个用于操作数据库的SQLiteDatabase()实例
+         * */
         db = dbHelper.getWritableDatabase();
     }
 
     /**
      * 获取CoolWeatherDB的实例
+     * 提供了一个getInstance方法来获取CoolWeatherDB的实例
+     * 这样就可以保证全局范围内只会有一个CoolWeatherDB的实例
      */
     public synchronized static CoolWeatherDB getInstance(Context context) {
         if (coolWeatherDB == null) {
@@ -51,10 +57,14 @@ public class CoolWeatherDB {
     /**
      * 将province实例存储到数据库
      *
-     * ContentValues只能存储基本类型的数据，像string，int之类的，不能存储对象这种东西，而HashTable却可以存储对象
+     *
      */
     public void saveProvince(Province province) {
         if (province != null) {
+            /**
+             * ContentValues只能存储基本类型的数据，像string，int之类的，
+             * 不能存储对象这种东西，而HashTable却可以存储对象
+             */
             ContentValues values = new ContentValues();
             values.put("province_name", province.getProvinceName());
             values.put("province_code", province.getProvinceCode());
@@ -65,20 +75,32 @@ public class CoolWeatherDB {
     /**
      * 从数据库读取全国所有的省份信息
      *
-     * Cursor是封装鼠标光标的位图表示形式的类
+     * Cursor query():对指定数据进行查询
      */
     public List<Province> loadProvince() {
         List<Province> list  = new ArrayList<Province>();
+        /**
+         * Cursor query(String table, String[] columns, String selection,
+         * String[] selectionArgs, String groupBy, String having,String orderBy)
+         * 表名，列要求，where子句——行要求，where子句——对应的条件值，
+         * 分组方式，having方式，排序方式
+         */
         Cursor cursor = db
                 .query("Province",null,null,null,null,null,null);
+        /* Cursor moveToFirst():记录指针移动到第一行，移动成功返回TRUE */
         if (cursor.moveToFirst()) {
             do {
                 Province province = new Province();
+                /**
+                 * 查询了 http://www.android-doc.com/reference/android/database/Cursor.html
+                 * String getColumnIndex(String columnName),返回指定列的名称，如果不存在返回-1
+                 * int getInt (int columnIndex),传入目标列的索性，返回索引的整型值
+                 */
                 province.setId(cursor.getInt(cursor.getColumnIndex("id")));
                 province.setProvinceName(cursor.getString(cursor.getColumnIndex("province_name")));
                 province.setProvinceCode(cursor.getString(cursor.getColumnIndex("province_code")));
                 list.add(province);
-            } while (cursor.moveToNext());
+            } while (cursor.moveToNext()); /*记录指针移动到下一个数据，移动成功返回TRUE*/
         }
         if (cursor != null) {
             cursor.close();
@@ -91,6 +113,7 @@ public class CoolWeatherDB {
      */
     public void saveCity(City city) {
         if (city != null) {
+
             ContentValues values = new ContentValues();
             values.put("city_name", city.getCityName());
             values.put("city_code", city.getCityCode());
@@ -104,6 +127,12 @@ public class CoolWeatherDB {
      */
     public List<City> loadCities(int provinceId) {
         List<City> list = new ArrayList<City>();
+        /**
+         * Cursor query(String table, String[] columns, String selection,
+         * String[] selectionArgs, String groupBy, String having,String orderBy)
+         * 表名，列要求，where子句——行要求，where子句——对应的条件值，
+         * 分组方式，having方式，排序方式
+         */
         Cursor cursor = db.query("City", null, "province_id = ?",
                 new String[] { String.valueOf(provinceId) }, null, null, null);
         if (cursor.moveToFirst()) {
@@ -138,7 +167,7 @@ public class CoolWeatherDB {
     /**
      * 从数据库读取某城市下所有的县信息
      */
-    public List<County> loadCounties(int cityId) {
+    public List<County> loadCounty(int cityId) {
         List<County> list = new ArrayList<County>();
         Cursor cursor = db.query("County", null, "city_id = ?",
                 new String[] { String.valueOf(cityId) }, null, null, null);
