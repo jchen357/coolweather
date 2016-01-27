@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.LinearLayout;
@@ -64,6 +65,9 @@ public class WeatherActivity extends Activity {
             publishText.setText("同步中...");
             weatherInfoLayout.setVisibility(View.INVISIBLE);
             cityNameText.setVisibility(View.INVISIBLE);
+
+            Log.d("Tag", "countyCode:"+countyCode);
+
             queryWeatherCode(countyCode);
         } else {
             /*没有县级代号时就直接显示本地天气*/
@@ -84,8 +88,9 @@ public class WeatherActivity extends Activity {
      * 查询天气代号所对应的天气
      */
     private void queryWeatherInfo(String weatherCode) {
-        String address = "http://www.weather.com.cn/data/list3/city" +
-                weatherCode + ".xml";
+        Log.d("Tag", "queryWeatherInfo");
+        String address = "http://www.weather.com.cn/data/cityinfo/" +
+                weatherCode + ".html";
         queryFromServer(address, "weatherCode");
     }
 
@@ -95,22 +100,29 @@ public class WeatherActivity extends Activity {
     private void queryFromServer(final String address, final String type) {
         HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
             @Override
-            public void onFinish(String response) {
+            public void onFinish(final String response) {
                 if ("countyCode".equals(type)) {
                     if (!TextUtils.isEmpty(response)) {
                         /*从服务器返回的数据中解析出天气代号*/
                         String[] array = response.split("\\|");
                         if (array != null && array.length == 2) {
                             String weatherCode = array[1];
+
+                            Log.d("Tag", "weatherCode:" + weatherCode);
+
                             queryWeatherInfo(weatherCode);
                         }
                     }
                 } else if ("weatherCode".equals(type)) {
                     /*处理服务器返回的天气信息*/
+
+
+
                     Utility.handleWeatherResponse(WeatherActivity.this, response);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            Log.d("Tag", "showWeather");
                             showWeather();
                         }
                     });
@@ -134,6 +146,7 @@ public class WeatherActivity extends Activity {
      */
     private void showWeather() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Log.d("Tag","cityNameText\t"+ prefs.getString("city_name", ""));
         cityNameText.setText(prefs.getString("city_name", ""));
         temp1Text.setText(prefs.getString("temp1", ""));
         temp2Text.setText(prefs.getString("temp2", ""));

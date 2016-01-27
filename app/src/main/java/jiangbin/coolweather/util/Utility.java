@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -81,9 +82,9 @@ public class Utility {
                 for (String c : allCounties) {
                     String[] array = c.split("\\|");
                     County county = new County();
-                    county.setcountyCode(array[0]);
-                    county.setcountyName(array[1]);
-                    county.setcityId(cityId);
+                    county.setCountyCode(array[0]);
+                    county.setCountyName(array[1]);
+                    county.setCityId(cityId);
                     /*将解析出来的数据存储到County表*/
                     coolWeatherDB.saveCounty(county);
                 }
@@ -98,6 +99,27 @@ public class Utility {
      */
     public static void handleWeatherResponse(Context context, String response) {
         try {
+            /**
+             * {
+             *  "weatherinfo":
+             *      {
+             *          "city":"昆山",
+             *          "cityid":"101190404"
+             *          "temp1":"21C"
+             *          ...
+             *      }
+             * }
+             **************************************************************
+             *
+             * JSON数据格式
+             * object =
+             * {
+             *      propertyName1 : propertyValue1 ,
+             *      propertyName2 : propertyValue2 ,
+             *      ...
+             * }
+             */
+            Log.d("Tag","handleWeatherResponse");
             JSONObject jsonObject = new JSONObject(response);
             JSONObject weatherInfo = jsonObject.getJSONObject("weatherinfo");
             String cityName = weatherInfo.getString("city");
@@ -106,8 +128,10 @@ public class Utility {
             String temp2 = weatherInfo.getString("temp2");
             String weatherDesp = weatherInfo.getString("weather");
             String publishTime = weatherInfo.getString("ptime");
+            Log.d("Tag", "<JSON>" +cityName+temp1);
             saveWeatherInfo(context, cityName, weatherCode, temp1, temp2, weatherDesp, publishTime);
         } catch (JSONException e) {
+            Log.d("Tag","JSONException");
             e.printStackTrace();
         }
     }
@@ -116,9 +140,22 @@ public class Utility {
      * 将服务器返回的所有天气信息存储到SharedPreferences文件
      */
     public static void saveWeatherInfo(Context context, String cityName, String weatherCode,
-                                       String temp1, String temp2, String weatherDesp, String publishTime) {
+                       String temp1, String temp2, String weatherDesp, String publishTime) {
+        /**
+         * SimpleDateFormat
+         * y-年  M-月  d-天  Locale.CHINA-定位在中国
+         */
+        Log.d("Tag", "saveWeatherInfo" + cityName + temp1);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月d日", Locale.CHINA);
+        /**
+         * SharedPreferences
+         * 保存的数据主要是简单类型的key-value对，本身没有写入数据的能力
+         * 通过内部的edit()方法获取Editor对象
+         */
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        /**
+         * putString(putBoolean):存入指定key对应的数据
+         */
         editor.putBoolean("city_selected", true);
         editor.putString("city_name", cityName);
         editor.putString("weather_code", weatherCode);
@@ -126,22 +163,14 @@ public class Utility {
         editor.putString("temp2", temp2);
         editor.putString("weather_desp", weatherDesp);
         editor.putString("publish_time", publishTime);
+        /**
+         * format():把Date格式的数据转换为String型
+         */
         editor.putString("current_date", sdf.format(new Date()));
+        /**
+         * commit():提交修改
+         */
         editor.commit();
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

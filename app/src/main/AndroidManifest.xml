@@ -17,6 +17,7 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="jiangbin.coolweather.activity.WeatherActivity"></activity>
     </application>
 
 </manifest>

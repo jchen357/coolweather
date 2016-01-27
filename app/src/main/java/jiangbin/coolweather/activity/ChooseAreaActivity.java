@@ -71,9 +71,17 @@ public class ChooseAreaActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         /*继承父类activity的onCreate方法*/
         super.onCreate(savedInstanceState);
-        //-----------------------------------------------------
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        //
+        /**
+         * SharedPreferences
+         * 保存的数据主要是简单类型的key-value对，本身没有写入数据的能力
+         * 通过内部的edit()方法获取Editor对象
+         */
+        SharedPreferences prefs = PreferenceManager.
+                getDefaultSharedPreferences(this);
+        /**
+         * 假如得到"city_selected":"false"，说明天气信息没有存储到SharedPreferences文件
+         * 则调用WeatherActivity
+         */
         if (prefs.getBoolean("city_selected", false)) {
             Intent intent = new Intent(this, WeatherActivity.class);
             startActivity(intent);
@@ -117,14 +125,26 @@ public class ChooseAreaActivity extends Activity {
                 } else if (currentLevel == LEVEL_CITY) {
                     selectedCity = cityList.get(index);
                     queryCounties();
-                    //---------------------------------------
                 } else if (currentLevel == LEVEL_COUNTY) {
-                    String countyCode = countyList.get(index).getcountyCode();
+                    /**
+                     * countyList.get(index)获得的是一个County对象，
+                     * 再调用getcountyCode()方法得到countyCode
+                     */
+
+                    String countyCode = countyList.get(index).getCountyCode();
+                    /**
+                     * Intent
+                     * 第一个参数提供启动活动的上下文
+                     * 第二个参数指定要启动的目标活动
+                     */
                     Intent intent = new Intent(ChooseAreaActivity.this, WeatherActivity.class);
+                    /**
+                     * putExtra()
+                     * 向下一个活动传递数据
+                     */
                     intent.putExtra("county_code", countyCode);
                     startActivity(intent);
                     finish();
-                    //---------------------------------------
                 }
             }
         });
@@ -192,12 +212,12 @@ public class ChooseAreaActivity extends Activity {
         if (countyList.size() > 0) {
             dataList.clear();
             for (County county : countyList) {
-                dataList.add(county.getcountyName());
+                dataList.add(county.getCountyName());
             }
             adapter.notifyDataSetChanged();
             listView.setSelection(0);
             titleText.setText(selectedCity.getCityName());
-            currentLevel = LEVEL_CITY;
+            currentLevel = LEVEL_COUNTY;
         } else {
             /*传入市级代号和市级类型*/
             queryFromServer(selectedCity.getCityCode(), "county");
@@ -222,11 +242,14 @@ public class ChooseAreaActivity extends Activity {
             public void onFinish(String response) {
                 boolean result = false;
                 if ("province".equals(type)) {
-                    result = Utility.handleProvincesResponse(coolWeatherDB, response);
+                    result = Utility.handleProvincesResponse(coolWeatherDB,
+                            response);
                 } else if ("city".equals(type)) {
-                    result = Utility.handleCitiesResponse(coolWeatherDB, response, selectedProvince.getId());
+                    result = Utility.handleCitiesResponse(coolWeatherDB,
+                            response, selectedProvince.getId());
                 } else if ("county".equals(type)) {
-                    result = Utility.handleCountiesResponse(coolWeatherDB, response, selectedCity.getId());
+                    result = Utility.handleCountiesResponse(coolWeatherDB,
+                            response, selectedCity.getId());
                 }
                 if (result) {
                     /*通过runOnUiThread()方法到主线程处理逻辑*/
@@ -256,7 +279,8 @@ public class ChooseAreaActivity extends Activity {
                         /*数据接收以及解析没有完成，关闭加载对话框*/
                         closeProgressDialog();
                         /*显示加载失败的提示框*/
-                        Toast.makeText(ChooseAreaActivity.this, "加载失败", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ChooseAreaActivity.this, "加载失败",
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
             }
